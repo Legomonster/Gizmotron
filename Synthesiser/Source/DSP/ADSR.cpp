@@ -16,12 +16,12 @@ namespace SynthDSP
 {
 
 // Corrected State enum to match JS logic
-enum class ADSR::State {
-    Idle,
-    Attack,
-    Decay,
-    Release
-};
+//enum class ADSR::State {
+//    Idle,
+//    Attack,
+//    Decay,
+//    Release
+//};
 
 ADSR::ADSR()
     : state(State::Idle),

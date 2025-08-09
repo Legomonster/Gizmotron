@@ -13,6 +13,7 @@
 #include "NoiseGenerators.h"
 #include <vector>
 
+
 namespace SynthDSP
 {
 
@@ -68,6 +69,7 @@ private:
     float h1 = 0.0f, h2 = 0.0f;
     float pwmState = 0.5f;
     float ampW = 0.0f;
+    
 
     struct Calibration {
         float freqCent;

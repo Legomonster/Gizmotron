@@ -31,7 +31,7 @@ static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
     addParam(ParamIDs::humAmt, "Hum Amount", 0.0f, 0.01f, 0.001f);
     addParam(ParamIDs::humHz, "Hum Hz", 40.0f, 120.0f, 50.0f);
     addParam(ParamIDs::os2x, "OS 2x", 0.0f, 1.0f, 1.0f);
-    addParam(ParamIDs::cutoff, "Cutoff", 40.0f, 16000.0f, 1200.0f);
+    addParam(ParamIDs::cutoff, "Cutoff", 0.0f, 1.0f, 0.5f);
     addParam(ParamIDs::res, "Resonance", 0.0f, 1.2f, 0.5f);
     addParam(ParamIDs::filterDrive, "Filter Drive", 0.0f, 1.0f, 0.2f);
     addParam(ParamIDs::filterEnvAmt, "Filter Env Amount", -1.0f, 1.0f, 0.5f);

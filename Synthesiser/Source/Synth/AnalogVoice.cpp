@@ -114,9 +114,9 @@ void AnalogVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int st
         const float aEnv = ampEnv.process(getSampleRate());
         const float fEnv = filEnv.process(getSampleRate());
 
-        const float hzA = std::max(0.0f, currentHz + m_fmBA * lastB);
-        const float detuneMultiplier = std::pow(2.0f, m_detuneB / 1200.0f);
-        const float hzB = std::max(0.0f, currentHz * detuneMultiplier + m_fmAB * lastA);
+        const float hzA = std::max(0.0f, currentHz + (m_fmBA * 1200.0f) * lastB);
+        const float detuneMultiplier = (m_detuneB * 10.0f);
+        const float hzB = std::max(0.0f, currentHz * detuneMultiplier + (m_fmAB * 1200.0f) * lastA);
 
         const float sA = oscA.process(hzA, 0, oscParams);
         const float sB = oscB.process(hzB, 0, oscBParams);
@@ -126,11 +126,11 @@ void AnalogVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int st
 
         float mix = sA * m_mixA + sB * m_mixB;
 
-        const float modCut = std::max(40.0f, std::min(16000.0f, baseCut * std::pow(2.0f, fEnvAmt * fEnv)));
+        const float modCut = baseCut + (1.0 * fEnv);
         filt.set(modCut, res, fdrive);
         const float y = filt.processSample(mix);
-
         const float outputSample = y * m_amp * aEnv;
+        //const float outputSample = mix * m_amp * aEnv;
 
         // Write the calculated sample to all channels in the output buffer
         for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)

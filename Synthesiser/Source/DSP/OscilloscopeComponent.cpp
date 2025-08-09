@@ -24,6 +24,7 @@ OscilloscopeComponent::~OscilloscopeComponent()
 
 void OscilloscopeComponent::paint(juce::Graphics& g)
 {
+    return;
     auto bounds = getLocalBounds().toFloat();
     g.fillAll(juce::Colours::black);
 
