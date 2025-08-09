@@ -137,14 +137,17 @@ SynthesiserAudioProcessorEditor::SynthesiserAudioProcessorEditor (SynthesiserAud
     : AudioProcessorEditor (&p), audioProcessor (p),
       tabs(juce::TabbedButtonBar::Orientation::TabsAtTop),
       mainPanel(p.getAPVTS()),
-      imperfectionPanel(p.getAPVTS())
+      imperfectionPanel(p.getAPVTS()),
+      scopeComponent(p)
 {
     tabs.addTab("Main", juce::Colours::darkgrey, &mainPanel, false);
     tabs.addTab("Imperfections", juce::Colours::darkgrey, &imperfectionPanel, false);
     addAndMakeVisible(tabs);
 
-    // Increased height to accommodate labels
-    setSize (800, 700);
+    addAndMakeVisible(scopeComponent);
+
+    // Increased height to accommodate labels and scope
+    setSize (800, 850);
 }
 
 SynthesiserAudioProcessorEditor::~SynthesiserAudioProcessorEditor()
@@ -158,5 +161,8 @@ void SynthesiserAudioProcessorEditor::paint (juce::Graphics& g)
 
 void SynthesiserAudioProcessorEditor::resized()
 {
-    tabs.setBounds(getLocalBounds());
+    auto bounds = getLocalBounds();
+    int scopeHeight = 150;
+    tabs.setBounds(bounds.removeFromTop(getHeight() - scopeHeight));
+    scopeComponent.setBounds(bounds);
 }

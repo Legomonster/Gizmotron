@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "DSP/OscilloscopeComponent.h"
 #include <vector>
 
 // To avoid cluttering the main editor, we'll create component classes for each tab
@@ -45,6 +46,7 @@ private:
     juce::TabbedComponent tabs;
     MainPanel mainPanel;
     ImperfectionPanel imperfectionPanel;
+    OscilloscopeComponent scopeComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SynthesiserAudioProcessorEditor)
 };

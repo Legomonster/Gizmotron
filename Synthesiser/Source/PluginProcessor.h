@@ -49,6 +49,7 @@ public:
     ~SynthesiserAudioProcessor() override;
 
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
+    juce::AudioBuffer<float>& getScopeBuffer() { return scopeBuffer; }
 
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -81,6 +82,7 @@ public:
 private:
     juce::Synthesiser synth;
     juce::AudioProcessorValueTreeState apvts;
+    juce::AudioBuffer<float> scopeBuffer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SynthesiserAudioProcessor)
 };

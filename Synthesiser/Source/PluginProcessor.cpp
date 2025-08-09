@@ -104,6 +104,9 @@ void SynthesiserAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
             voice->prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
         }
     }
+
+    scopeBuffer.setSize(1, 512);
+    scopeBuffer.clear();
 }
 
 void SynthesiserAudioProcessor::releaseResources() {}
@@ -128,6 +131,10 @@ void SynthesiserAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         buffer.clear (i, 0, buffer.getNumSamples());
 
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+
+    // Copy the output to the scope buffer
+    int numSamplesToCopy = std::min(buffer.getNumSamples(), scopeBuffer.getNumSamples());
+    scopeBuffer.copyFrom(0, 0, buffer, 0, 0, numSamplesToCopy);
 }
 
 bool SynthesiserAudioProcessor::hasEditor() const
