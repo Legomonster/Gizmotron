@@ -107,10 +107,10 @@ void AnalogVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int st
     const float m_fmBA = getParamValue(apvts, ParamIDs::fmBA);
     const float m_amp = getParamValue(apvts, ParamIDs::amp);
 
-    auto* channelData = outputBuffer.getWritePointer(0);
-
+    // The main processing loop
     for (int i = startSample; i < startSample + numSamples; ++i)
     {
+        // Calculate one sample of the voice's output
         const float aEnv = ampEnv.process(getSampleRate());
         const float fEnv = filEnv.process(getSampleRate());
 
@@ -130,8 +130,15 @@ void AnalogVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int st
         filt.set(modCut, res, fdrive);
         const float y = filt.processSample(mix);
 
-        channelData[i] += y * m_amp * aEnv;
+        const float outputSample = y * m_amp * aEnv;
 
+        // Write the calculated sample to all channels in the output buffer
+        for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)
+        {
+            outputBuffer.getWritePointer(channel)[i] += outputSample;
+        }
+
+        // If the amp envelope is finished, the voice is no longer active
         if (!ampEnv.isActive())
         {
             clearCurrentNote();
