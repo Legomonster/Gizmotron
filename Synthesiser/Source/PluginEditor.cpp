@@ -1,99 +1,131 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-// Helper to create a slider and its attachment
-void createSlider(juce::AudioProcessorValueTreeState& apvts,
-                  std::vector<std::unique_ptr<juce::Slider>>& sliders,
-                  std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>& attachments,
-                  juce::Component& parent,
-                  const juce::String& paramID)
+// Helper to create a slider, its label, and its attachment
+void createSliderWithLabel(juce::AudioProcessorValueTreeState& apvts,
+                           std::vector<std::unique_ptr<juce::Slider>>& sliders,
+                           std::vector<std::unique_ptr<juce::Label>>& labels,
+                           std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>& attachments,
+                           juce::Component& parent,
+                           const juce::String& paramID,
+                           const juce::String& labelText)
 {
+    // Slider
     auto slider = std::make_unique<juce::Slider>(juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow);
     parent.addAndMakeVisible(*slider);
     attachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramID, *slider));
     sliders.push_back(std::move(slider));
+
+    // Label
+    auto label = std::make_unique<juce::Label>(paramID, labelText);
+    label->attachToComponent(sliders.back().get(), false);
+    label->setJustificationType(juce::Justification::centred);
+    parent.addAndMakeVisible(*label);
+    labels.push_back(std::move(label));
 }
+
 
 // ======================= MainPanel ============================
 
 MainPanel::MainPanel(juce::AudioProcessorValueTreeState& apvts)
 {
-    const char* paramIDs[] = {
-        ParamIDs::mixA, ParamIDs::mixB, ParamIDs::detuneB, ParamIDs::fmAB, ParamIDs::fmBA,
-        ParamIDs::ampA, ParamIDs::ampD, ParamIDs::ampS, ParamIDs::ampR,
-        ParamIDs::filA, ParamIDs::filD, ParamIDs::filS, ParamIDs::filR,
-        ParamIDs::cutoff, ParamIDs::res, ParamIDs::filterDrive, ParamIDs::filterEnvAmt,
-        ParamIDs::amp
+    const std::pair<const char*, const char*> paramIDs[] = {
+        {ParamIDs::mixA, "Mix A"}, {ParamIDs::mixB, "Mix B"}, {ParamIDs::detuneB, "Detune B"}, {ParamIDs::fmAB, "FM A->B"}, {ParamIDs::fmBA, "FM B->A"},
+        {ParamIDs::ampA, "Amp Att"}, {ParamIDs::ampD, "Amp Dec"}, {ParamIDs::ampS, "Amp Sus"}, {ParamIDs::ampR, "Amp Rel"},
+        {ParamIDs::filA, "Filt Att"}, {ParamIDs::filD, "Filt Dec"}, {ParamIDs::filS, "Filt Sus"}, {ParamIDs::filR, "Filt Rel"},
+        {ParamIDs::cutoff, "Cutoff"}, {ParamIDs::res, "Resonance"}, {ParamIDs::filterDrive, "Filt Drive"}, {ParamIDs::filterEnvAmt, "Filt Env"},
+        {ParamIDs::amp, "Amp"}
     };
-    for (const auto* id : paramIDs)
+    for (const auto& id_pair : paramIDs)
     {
-        createSlider(apvts, sliders, attachments, *this, id);
+        createSliderWithLabel(apvts, sliders, labels, attachments, *this, id_pair.first, id_pair.second);
     }
 
-    waveA = std::make_unique<juce::ComboBox>();
+    waveA = std::make_unique<juce::ComboBox>("Wave A");
     addAndMakeVisible(*waveA);
     waveAAttach = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, ParamIDs::waveA, *waveA);
+    auto waveALabel = std::make_unique<juce::Label>("Wave A Label", "Wave A");
+    waveALabel->attachToComponent(waveA.get(), false);
+    waveALabel->setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(*waveALabel);
+    labels.push_back(std::move(waveALabel));
 
-    waveB = std::make_unique<juce::ComboBox>();
+    waveB = std::make_unique<juce::ComboBox>("Wave B");
     addAndMakeVisible(*waveB);
     waveBAttach = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, ParamIDs::waveB, *waveB);
+    auto waveBLabel = std::make_unique<juce::Label>("Wave B Label", "Wave B");
+    waveBLabel->attachToComponent(waveB.get(), false);
+    waveBLabel->setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(*waveBLabel);
+    labels.push_back(std::move(waveBLabel));
 }
 
 void MainPanel::resized()
 {
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(20);
     int sliderWidth = 100;
     int sliderHeight = 100;
+    int labelHeight = 20;
+    int totalHeight = sliderHeight + labelHeight;
     int x = 0, y = 0;
 
-    for (auto& slider : sliders)
+    // Layout sliders first
+    for (size_t i = 0; i < sliders.size(); ++i)
     {
-        slider->setBounds(x, y, sliderWidth, sliderHeight);
+        sliders[i]->setBounds(x, y + labelHeight, sliderWidth, sliderHeight);
+        labels[i]->setBounds(x, y, sliderWidth, labelHeight);
         x += sliderWidth;
         if (x + sliderWidth > bounds.getWidth())
         {
             x = 0;
-            y += sliderHeight;
+            y += totalHeight;
         }
     }
 
-    y += sliderHeight;
-    waveA->setBounds(x, y, sliderWidth, 20);
+    // Layout combo boxes
+    y += totalHeight;
+    x = 0;
+    waveA->setBounds(x, y + labelHeight, sliderWidth, 25);
+    labels[sliders.size()]->setBounds(x, y, sliderWidth, labelHeight);
     x += sliderWidth;
-    waveB->setBounds(x, y, sliderWidth, 20);
+    waveB->setBounds(x, y + labelHeight, sliderWidth, 25);
+    labels[sliders.size() + 1]->setBounds(x, y, sliderWidth, labelHeight);
 }
 
 // ======================= ImperfectionPanel ============================
 
 ImperfectionPanel::ImperfectionPanel(juce::AudioProcessorValueTreeState& apvts)
 {
-    const char* paramIDs[] = {
-        ParamIDs::drive, ParamIDs::drift, ParamIDs::wowDepth, ParamIDs::wowRate,
-        ParamIDs::jitter, ParamIDs::edgeJitter, ParamIDs::pwm, ParamIDs::compSlew,
-        ParamIDs::freqPink, ParamIDs::freqBrown, ParamIDs::pwmPink, ParamIDs::pwmBrown,
-        ParamIDs::capHealth, ParamIDs::humAmt, ParamIDs::humHz, ParamIDs::os2x
+    const std::pair<const char*, const char*> paramIDs[] = {
+        {ParamIDs::drive, "Osc Drive"}, {ParamIDs::drift, "Drift"}, {ParamIDs::wowDepth, "Wow Depth"}, {ParamIDs::wowRate, "Wow Rate"},
+        {ParamIDs::jitter, "Jitter"}, {ParamIDs::edgeJitter, "Edge Jitter"}, {ParamIDs::pwm, "PWM"}, {ParamIDs::compSlew, "Slew"},
+        {ParamIDs::freqPink, "Freq Pink"}, {ParamIDs::freqBrown, "Freq Brown"}, {ParamIDs::pwmPink, "PWM Pink"}, {ParamIDs::pwmBrown, "PWM Brown"},
+        {ParamIDs::capHealth, "Cap Health"}, {ParamIDs::humAmt, "Hum Amt"}, {ParamIDs::humHz, "Hum Hz"}, {ParamIDs::os2x, "OS 2x"}
     };
-    for (const auto* id : paramIDs)
+    for (const auto& id_pair : paramIDs)
     {
-        createSlider(apvts, sliders, attachments, *this, id);
+        createSliderWithLabel(apvts, sliders, labels, attachments, *this, id_pair.first, id_pair.second);
     }
 }
 
 void ImperfectionPanel::resized()
 {
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(20);
     int sliderWidth = 100;
     int sliderHeight = 100;
+    int labelHeight = 20;
+    int totalHeight = sliderHeight + labelHeight;
     int x = 0, y = 0;
 
-    for (auto& slider : sliders)
+    for (size_t i = 0; i < sliders.size(); ++i)
     {
-        slider->setBounds(x, y, sliderWidth, sliderHeight);
+        sliders[i]->setBounds(x, y + labelHeight, sliderWidth, sliderHeight);
+        labels[i]->setBounds(x, y, sliderWidth, labelHeight);
         x += sliderWidth;
         if (x + sliderWidth > bounds.getWidth())
         {
             x = 0;
-            y += sliderHeight;
+            y += totalHeight;
         }
     }
 }
@@ -111,7 +143,8 @@ SynthesiserAudioProcessorEditor::SynthesiserAudioProcessorEditor (SynthesiserAud
     tabs.addTab("Imperfections", juce::Colours::darkgrey, &imperfectionPanel, false);
     addAndMakeVisible(tabs);
 
-    setSize (800, 600);
+    // Increased height to accommodate labels
+    setSize (800, 700);
 }
 
 SynthesiserAudioProcessorEditor::~SynthesiserAudioProcessorEditor()
